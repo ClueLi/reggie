@@ -17,7 +17,7 @@ import java.util.logging.FileHandler;
 * 检查用户是否已经完成登录
 * */
 @Slf4j
-@WebFilter(filterName = "loginCheckFilter", urlPatterns = "/*")
+//@WebFilter(filterName = "loginCheckFilter", urlPatterns = "/*")
 public class LoginCheckFilter implements Filter {
     //路劲匹配器，支持通配符
     public static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
@@ -39,7 +39,8 @@ public class LoginCheckFilter implements Filter {
                 "/front/**",
                 "/common/**",
                 "/user/login",
-                "/user/sendMsg"
+                "/user/sendMsg",
+                "/doc**"
         };
 
         //2. 判断本次请求是否需要处理
