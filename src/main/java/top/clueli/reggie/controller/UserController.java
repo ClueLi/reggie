@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import top.clueli.reggie.common.R;
 import top.clueli.reggie.dto.UserDto;
@@ -12,7 +13,7 @@ import top.clueli.reggie.entity.User;
 import top.clueli.reggie.service.UserService;
 
 import javax.servlet.http.HttpSession;
-
+import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
@@ -23,6 +24,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 获取前端发送的手机号码和验证码
@@ -35,10 +39,13 @@ public class UserController {
         log.info(userDto.getPhone() + "&&" + userDto.getCode());
         //获取手机号
         String phone = userDto.getPhone();
+        String code = userDto.getCode();
 
         if(!StringUtils.isEmpty(phone)) {
-            //前端生成的验证码,直接进行保存即可
-            session.setAttribute(phone, userDto.getCode());
+            //前端生成的验证码,直接进行在redis中保存，设置五分钟进行关闭
+            stringRedisTemplate.opsForValue().set(phone, code, 5, TimeUnit.MINUTES);
+
+//            session.setAttribute(phone, userDto.getCode());
             return R.success("成功");
         }
 
@@ -54,11 +61,14 @@ public class UserController {
     @PostMapping("/login")
     public R<String> login(@RequestBody UserDto userDto, HttpSession session) {
         log.info(userDto.getPhone() + "&&" + userDto.getCode());
-        String codeInSession =(String) session.getAttribute(userDto.getPhone());
+//        String codeInSession =(String) session.getAttribute(userDto.getPhone());
         String code = userDto.getCode();
         String phone = userDto.getPhone();
 
-        if (!StringUtils.isEmpty(codeInSession) && codeInSession.equals(code)) {
+        // 从redis获取验证码
+        String codeInRedis = stringRedisTemplate.opsForValue().get(phone);
+
+        if (!StringUtils.isEmpty(codeInRedis) && codeInRedis.equals(code)) {
             LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(!StringUtils.isEmpty(userDto.getPhone()),User::getPhone, userDto.getPhone());
             User user = userService.getOne(queryWrapper);
@@ -69,6 +79,9 @@ public class UserController {
                 userService.save(user);
             }
             session.setAttribute("user", user.getId());
+
+            // 用户登录成功，删除redis中的验证码
+            stringRedisTemplate.delete(phone);
             return R.success("登录成功");
         }
 

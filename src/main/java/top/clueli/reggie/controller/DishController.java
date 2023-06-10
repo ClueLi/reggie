@@ -1,13 +1,16 @@
 package top.clueli.reggie.controller;
 
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import top.clueli.reggie.common.R;
 import top.clueli.reggie.dto.DishDto;
@@ -22,6 +25,8 @@ import top.clueli.reggie.utils.ImageUtil;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /*
@@ -30,7 +35,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/dish")
 @Slf4j
-@Api(tags = "菜品管理接口")
+@Api(tags = "菜品管理")
 public class DishController {
     @Autowired
     private DishService dishService;
@@ -41,7 +46,19 @@ public class DishController {
     @Autowired
     private CategoryService categoryService;
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+
+    /**
+     * 获取所有菜品信息
+     * @param page
+     * @param pageSize
+     * @param name
+     * @return
+     */
     @GetMapping("/page")
+    @ApiOperation("获取所有菜品信息")
     public R<Page> page(int page, int pageSize, String name){
         //分页构造器
         Page<Dish> pageInfo = new Page<>(page, pageSize);
@@ -113,6 +130,10 @@ public class DishController {
             ImageUtil.delete(oldDish.getImage());
         }
         dishService.updateWithFlavor(dishDto);
+
+        // 清除指定的redis缓存key
+        String key = "dish_" + dishDto.getCategoryId() + "_1";
+        stringRedisTemplate.delete(key);
         return R.success("更新成功");
     }
 
@@ -124,6 +145,9 @@ public class DishController {
         for (Long id : ids) {
             dishService.removeWithFlavor(id);
         }
+        // 清除全部的redis缓存key
+        Set<String> keys = stringRedisTemplate.keys("dish_*");
+        if (keys != null)  stringRedisTemplate.delete(keys);
         return R.success("删除成功");
     }
 
@@ -140,8 +164,26 @@ public class DishController {
         return R.success("修改成功");
     }
 
+    /**
+     * 获取指定菜品分类id的所有菜品
+     * @param dish
+     * @return
+     */
     @GetMapping("/list")
     public R<List<DishDto>> list(Dish dish) {
+        List<DishDto> dishDtoList = null;
+        String key = "dish_" + dish.getCategoryId() + "_" + dish.getStatus();
+        // 先从redis中获取缓存
+        String dishDtoListString = stringRedisTemplate.opsForValue().get(key);
+
+
+        if (dishDtoListString != null) {
+            dishDtoList = JSON.parseArray(dishDtoListString, DishDto.class);
+            //如果存在直接返回
+            return R.success(dishDtoList);
+        }
+
+        // 如果不存在，需要查询数据库，将查询的菜品数据缓存到redis
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(dish.getName() !=null && !dish.getName().equals(""), Dish::getName, dish.getName());
         queryWrapper.eq(dish.getCategoryId() != null ,Dish::getCategoryId, dish.getCategoryId());
@@ -149,7 +191,7 @@ public class DishController {
         queryWrapper.eq(Dish::getStatus, 1);
         List<Dish> dishList = dishService.list(queryWrapper);
 
-        List<DishDto> dishDtoList = dishList.stream().map((item) -> {
+        dishDtoList = dishList.stream().map((item) -> {
             DishDto dishDto = new DishDto();
             BeanUtils.copyProperties(item, dishDto);
 
@@ -171,6 +213,10 @@ public class DishController {
 
             return dishDto;
         }).collect(Collectors.toList());
+
+        // 将查询到的数据缓存到redis
+        stringRedisTemplate.opsForValue().set(key, JSON.toJSONString(dishDtoList), 60, TimeUnit.MINUTES);
+
         return R.success(dishDtoList);
     }
 
