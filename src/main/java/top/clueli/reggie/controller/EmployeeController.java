@@ -2,6 +2,7 @@ package top.clueli.reggie.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 @Slf4j
 @RestController
 @RequestMapping("/employee")
+@Api(tags = "员工接口")
 public class EmployeeController {
 
     @Autowired

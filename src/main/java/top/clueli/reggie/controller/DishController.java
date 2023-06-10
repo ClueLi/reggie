@@ -3,6 +3,7 @@ package top.clueli.reggie.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/dish")
 @Slf4j
+@Api(tags = "菜品管理接口")
 public class DishController {
     @Autowired
     private DishService dishService;

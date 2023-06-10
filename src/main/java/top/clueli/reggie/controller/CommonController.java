@@ -1,5 +1,6 @@
 package top.clueli.reggie.controller;
 
+import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -23,6 +24,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/common")
 @Slf4j
+@Api(tags = "公共接口")
 public class CommonController {
     @Value("${reggie.path}")
     private String basePath;

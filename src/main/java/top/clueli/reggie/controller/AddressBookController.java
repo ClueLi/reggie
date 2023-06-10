@@ -21,7 +21,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/addressBook")
-@Api(tags = "地址簿")
+@Api(tags = "地址簿接口")
 public class AddressBookController {
 
     @Autowired

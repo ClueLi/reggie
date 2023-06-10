@@ -2,6 +2,7 @@ package top.clueli.reggie.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import top.clueli.reggie.common.BaseContext;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequestMapping("/order")
+@Api(tags = "订单接口")
 public class OrderController {
 
     @Autowired

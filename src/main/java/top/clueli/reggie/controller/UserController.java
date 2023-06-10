@@ -2,6 +2,7 @@ package top.clueli.reggie.controller;
 
 import com.alibaba.druid.util.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ import javax.servlet.http.HttpSession;
 @Slf4j
 @RestController
 @RequestMapping("/user")
+@Api(tags = "用户接口")
 public class UserController {
 
     @Autowired

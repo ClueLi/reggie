@@ -9,8 +9,8 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Slf4j
 @SpringBootApplication
-//@ServletComponentScan
 @EnableTransactionManagement
+@EnableWebMvc
 public class ReggieApplication {
     public static void main(String[] args) {
         SpringApplication.run(ReggieApplication.class);

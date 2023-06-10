@@ -3,6 +3,7 @@ package top.clueli.reggie.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/setmeal")
 @Slf4j
+@Api(tags = "套餐接口")
 public class SetmealController {
     @Autowired
     private SetmealService setmealService;

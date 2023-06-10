@@ -2,6 +2,7 @@ package top.clueli.reggie.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/shoppingCart")
+@Api(tags = "购物车接口")
 public class ShoppingCartController {
 
     @Autowired
